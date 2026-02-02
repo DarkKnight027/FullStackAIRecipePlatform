@@ -7,7 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 const Header = () => {
-    const user = null; //replace with actual user logic
+  const user = null; //replace with actual user logic
   return (
     <header className='fixed top-0 w-full border-b border-stone-200 bg-stone-50/80 backdrop-blur-md z-50 supports-backdrop-blur-md
     '>  

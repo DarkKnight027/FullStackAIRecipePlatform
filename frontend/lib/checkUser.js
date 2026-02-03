@@ -1,4 +1,4 @@
-import { currentUser } from '@clerk/nextjs/dist/types/server';
+import { currentUser } from '@clerk/nextjs/server';
 import React from 'react'
 
 

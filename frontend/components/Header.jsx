@@ -5,6 +5,8 @@ import React from 'react'
 import { Button } from './ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Cookie, Refrigerator } from 'lucide-react';
+import UserDropdown from './UserDropdown';
 
 const Header = () => {
   const user = null; //replace with actual user logic
@@ -16,13 +18,22 @@ const Header = () => {
           <Image src="/logo2.png" alt="Logo" width={60} height={60} className="w-16" />
         </Link>
 
-        <div>
-            Nav Links
+
+
+
+        <div className='hidden md:flex items-center space-x-8 text-sm font-medium'>
+            <Link href="/recipes" className='text-stone-600 hover:text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-md font-medium'><Cookie className='w-4 h-4'/> My Recipes</Link>
+
+               <Link href="/pantry" className='text-stone-600 hover:text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-md font-medium'><Refrigerator className='w-4 h-4'/> My Pantry</Link>
+                  
+            
         </div>
         <div className='flex items-center space-x-4'>
 
                  <SignedIn>
-              <UserButton />
+                    {/* How to Cook */}
+                    <UserDropdown />
+            
             </SignedIn>
          <SignedOut>
               <SignInButton  mode="modal">

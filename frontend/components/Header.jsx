@@ -1,6 +1,6 @@
 "use client";
 
-import { SignedOut, SignedIn, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
+import { SignedOut, SignedIn, SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs'
 import React from 'react'
 import { Button } from './ui/button';
 import Image from 'next/image';
@@ -9,7 +9,7 @@ import { Cookie, Refrigerator } from 'lucide-react';
 import UserDropdown from './UserDropdown';
 
 const Header = () => {
-  const user = null; //replace with actual user logic
+  const { isSignedIn, user } = useUser();
   return (
     <header className='fixed top-0 w-full border-b border-stone-200 bg-stone-50/80 backdrop-blur-md z-50 supports-backdrop-blur-md
     '>  

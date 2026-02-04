@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
+import PricingSection from './PricingSection';
+
 
 const PricingModal = ({subscriptionTier="free",children}) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -13,9 +15,10 @@ const PricingModal = ({subscriptionTier="free",children}) => {
 
         <Dialog open={isOpen} onOpenChange={canOpen? setIsOpen : undefined}> 
   <DialogTrigger>{children}</DialogTrigger>
-  <DialogContent>
+  <DialogContent className="p-8 pt-4 sm:max-w-4xl">
     
       <DialogTitle>Are you absolutely sure?</DialogTitle>
+      <PricingSection/>
    
   </DialogContent>
 </Dialog>

@@ -14,37 +14,40 @@ export default function HeaderClient({ user }) {
   const tier = user?.subscriptionTier === "pro" ? "pro" : "free";
 
   return (
-    <header className="fixed top-0 w-full border-b border-stone-100 bg-white/95 backdrop-blur-md z-50">
+    <header className="fixed top-0 w-full border-b border-stone-200 bg-white/95 backdrop-blur-md z-50">
       <nav className="max-w-7xl mx-auto px-4 h-16 grid grid-cols-3 items-center">
         
         {/* LEFT: Logo */}
         <div className="flex justify-start">
           <Link href={user ? "/dashboard" : "/"} className="flex items-center group">
-            <Image 
-                src="/logo.png" 
-                alt="Swadistt Logo" 
-                width={48} 
-                height={48} 
-                className="w-10 h-10 sm:w-12 sm:h-12 object-contain" 
-            />
-            <span className="text-orange-500 font-bold text-lg ml-2 hidden sm:block">
+            <div className="relative">
+                 <Image 
+                    src="/logo.png" 
+                    alt="Swadistt Logo" 
+                    width={48} 
+                    height={48} 
+                    className="w-10 h-10 sm:w-11 sm:h-11 object-contain transition-transform group-hover:scale-110" 
+                />
+            </div>
+            {/* Standardized to orange-600 */}
+            <span className="text-orange-600 font-extrabold text-xl ml-2 hidden sm:block tracking-tight">
                 Swadistt
             </span>
           </Link>
         </div>
 
-        {/* CENTER: Navigation Links (Always Visible) */}
-        <div className="flex justify-center items-center gap-2 sm:gap-6">
+        {/* CENTER: Navigation Links */}
+        <div className="flex justify-center items-center gap-1 sm:gap-4">
           <Link 
             href="/recipes" 
-            className="flex items-center gap-1.5 text-stone-600 hover:text-orange-600 px-2 py-2 transition-all font-medium text-sm whitespace-nowrap"
+            className="flex items-center gap-1.5 text-stone-500 hover:text-orange-600 px-3 py-2 transition-colors font-semibold text-sm rounded-lg hover:bg-orange-50"
           >
             <Cookie className="w-4 h-4" /> 
             <span className="inline">My Recipes</span>
           </Link>
           <Link 
             href="/pantry" 
-            className="flex items-center gap-1.5 text-stone-600 hover:text-orange-600 px-2 py-2 transition-all font-medium text-sm whitespace-nowrap"
+            className="flex items-center gap-1.5 text-stone-500 hover:text-orange-600 px-3 py-2 transition-colors font-semibold text-sm rounded-lg hover:bg-orange-50"
           >
             <Refrigerator className="w-4 h-4" /> 
             <span className="inline">My Pantry</span>
@@ -58,14 +61,14 @@ export default function HeaderClient({ user }) {
               <PricingModal subscriptionTier={tier}>
                 <Badge 
                   variant='outline' 
-                  className={`flex h-8 px-3 gap-1 rounded-full text-[10px] sm:text-xs font-bold transition-all cursor-pointer border-2 ${
+                  className={`flex h-8 px-3 gap-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all cursor-pointer border-2 ${
                     tier === "pro" 
-                      ? "bg-amber-500 border-amber-600 text-white shadow-sm hover:bg-amber-600" 
+                      ? "bg-orange-600 border-orange-700 text-white shadow-md shadow-orange-100 hover:bg-orange-700" 
                       : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
                   }`}
                 >
                   <Sparkles className={`h-3 w-3 ${tier === "pro" ? "fill-white" : "text-stone-400"}`} />
-                  <span>{tier === "pro" ? "Pro Chef" : "Free Plan"}</span>
+                  <span>{tier === "pro" ? "Pro Chef" : "Upgrade"}</span>
                 </Badge>
               </PricingModal>
               <UserDropdown />
@@ -75,12 +78,12 @@ export default function HeaderClient({ user }) {
           <SignedOut>
             <div className="flex items-center space-x-2">
               <SignInButton mode="modal">
-                <Button variant="ghost" size="sm" className="text-stone-600 hover:text-orange-600">
+                <Button variant="ghost" size="sm" className="text-stone-600 hover:text-orange-600 font-bold">
                     Sign In
                 </Button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-4 sm:px-6 shadow-sm">
+                <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white rounded-full px-5 sm:px-7 font-bold shadow-lg shadow-orange-100 transition-transform active:scale-95">
                   Get Started
                 </Button>
               </SignUpButton>

@@ -2,6 +2,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import Header from "../components/Header";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,6 +19,7 @@ export default function RootLayout({ children }) {
         <body className={`${inter.className} antialiased`}>
           <Header />
           <main className="min-h-screen">{children}</main>
+          <Toaster richColors/>
           <footer className="py-8 px-4 border-t">
             <div className="max-w-6xl mx-auto flex justify-center item-center">
               <p className="text-stone-500 text-sm">Hello AI</p>

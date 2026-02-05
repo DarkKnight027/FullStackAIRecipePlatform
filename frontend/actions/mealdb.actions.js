@@ -6,7 +6,7 @@ export async function getRecipeOfTheDay() {
 
     try{
         const res = await fetch(`${MEALDB_BASE}/random.php`, {
-            next: { revalidate: 86400 }, // Revalidate every 24 hours
+            next: { revalidate: 100 }, // Revalidate every 24 hours
         });
 
         if(!res.ok){
@@ -29,7 +29,7 @@ export async function getRecipeOfTheDay() {
 export async function getCategories() {
      try{
         const res = await fetch(`${MEALDB_BASE}/list.php?c=list`, {
-            next: { revalidate: 604800 }, // Revalidate every 1 week
+            next: { revalidate: 6048 }, // Revalidate every 1 week
         });
 
         if(!res.ok){
@@ -50,7 +50,7 @@ export async function getAreas() {
 
     try{
         const res = await fetch(`${MEALDB_BASE}/list.php?a=list`, {
-             next: { revalidate: 86400 }, // Revalidate every 24 hours
+             next: { revalidate: 864 }, // Revalidate every 24 hours
         });
 
         if(!res.ok){
@@ -70,7 +70,7 @@ export async function getAreas() {
 export async function getMealsByCategory(category) {
     try{
         const res = await fetch(`${MEALDB_BASE}/filter.php?c=${category}`, {
-            next: { revalidate: 86400 }, // Revalidate every 24 hours
+            next: { revalidate: 864 }, // Revalidate every 24 hours
         });
 
         if(!res.ok){
@@ -90,7 +90,7 @@ export async function getMealsByCategory(category) {
 export async function getMealsByArea(area) {
     try{
         const res = await fetch(`${MEALDB_BASE}/filter.php?a=${area}`, {
-            next: { revalidate: 86400 }, // Revalidate every 24 hours
+            next: { revalidate: 864 }, // Revalidate every 24 hours
         });
 
         if(!res.ok){

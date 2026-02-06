@@ -1,28 +1,26 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
-import React from 'react'
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
 
-const checkUser = async() => {
+const checkUser = async () => {
     const user = await currentUser();
-    if(!user){
+    if (!user) {
         return null;
     }
- 
-    if(!STRAPI_API_TOKEN){
+
+    if (!STRAPI_API_TOKEN) {
         console.warn('STRAPI_API_TOKEN is not defined; admin operations will be skipped.');
     }
 
-    const {has} = await auth();
-    const subscriptionTier = has({plan: "pro"}) ? "pro" : "free";
+    const { has } = await auth();
+    const subscriptionTier = has({ plan: "pro" }) ? "pro" : "free";
 
     try {
         // 1. Try to find the user in Strapi by their Clerk ID
         let existingUserResponse = null;
         if (STRAPI_API_TOKEN) {
             try {
-                // The users endpoint is flat, we filter directly
                 existingUserResponse = await fetch(`${STRAPI_URL}/api/users?filters[clerkId][$eq]=${user.id}`, {
                     headers: {
                         Authorization: `Bearer ${STRAPI_API_TOKEN}`,
@@ -39,7 +37,7 @@ const checkUser = async() => {
         }
 
         const dataArr = existingUserResponse ? await existingUserResponse.json() : [];
-        
+
         // 2. If user exists, update tier if it changed
         if (Array.isArray(dataArr) && dataArr.length > 0) {
             const existingUser = dataArr[0];
@@ -51,7 +49,6 @@ const checkUser = async() => {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${STRAPI_API_TOKEN}`,
                     },
-                    // /api/users updates must be FLAT, no "data" wrapper
                     body: JSON.stringify({
                         subscriptionTier,
                     }),
@@ -64,13 +61,12 @@ const checkUser = async() => {
             return existingUser;
         }
 
-        // 3. User doesn't exist, let's prepare to create them
+        // 3. User doesn't exist, prepare to create
         const email = user.emailAddresses?.[0]?.emailAddress;
         const username = user.username || email || `user_${user.id}`;
         const password = 'clerk_managed_user_pwd_123!';
 
-        // Attempt to find the "Authenticated" role ID
-        let roleId = 1; // Default fallback to 1 (usually Authenticated in Strapi)
+        let roleId = 1; 
         try {
             const rolesRes = await fetch(`${STRAPI_URL}/api/users-permissions/roles`, {
                 headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
@@ -86,15 +82,13 @@ const checkUser = async() => {
             console.warn("Could not fetch roles, using default ID 1");
         }
 
-        // 4. Create the user using the Admin API (/api/users)
-        // This is the most reliable way to set clerkId and role at once
+        // 4. Create the user
         const createUserResponse = await fetch(`${STRAPI_URL}/api/users`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${STRAPI_API_TOKEN}`,
             },
-            // /api/users expects a FLAT object, NOT wrapped in "data"
             body: JSON.stringify({
                 username,
                 email,
@@ -109,7 +103,6 @@ const checkUser = async() => {
 
         if (!createUserResponse.ok) {
             const errorData = await createUserResponse.text();
-            // If creation fails (e.g. user already exists by email), try one last lookup
             if (createUserResponse.status === 400) {
                 const retryLookup = await fetch(`${STRAPI_URL}/api/users?filters[email][$eq]=${email}`, {
                     headers: { Authorization: `Bearer ${STRAPI_API_TOKEN}` },
@@ -119,7 +112,7 @@ const checkUser = async() => {
                     if (retryData.length > 0) return retryData[0];
                 }
             }
-            throw new Error(`Failed to create user in Strapi: ${createUserResponse.status} - ${errorData}`);
+            throw new Error(`Failed to create user in Strapi: ${createUserResponse.status}`);
         }
 
         return await createUserResponse.json();

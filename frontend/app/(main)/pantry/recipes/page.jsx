@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import useFetch from "@/hooks/use-fetch";
+import useFetch from "@/hooks/useFetch";
 import { getRecipesByPantryIngredients } from "@/actions/recipe.actions";
 import RecipeCard from "@/components/RecipeCard";
 import PricingModal from "@/components/PricingModal";

@@ -58,10 +58,12 @@ export default function PantryPage() {
     fetchItems();
   }, []);
 
-  // Update items when data arrives
+  // FIXED: The action now returns the array directly, not an object with .success
   useEffect(() => {
-    if (itemsData?.success) {
-      setItems(itemsData.items);
+    if (itemsData) {
+      // If itemsData is an array, set it. If it's the old object format, handle both.
+      const pantryItems = Array.isArray(itemsData) ? itemsData : itemsData.items || [];
+      setItems(pantryItems);
     }
   }, [itemsData]);
 
@@ -71,7 +73,7 @@ export default function PantryPage() {
       toast.success("Item removed from pantry");
       fetchItems();
     }
-  }, [deleteData]);
+  }, [deleteData, deleting]);
 
   // Refresh after update
   useEffect(() => {
@@ -84,14 +86,12 @@ export default function PantryPage() {
 
   // Handle delete
   const handleDelete = async (itemId) => {
-    const formData = new FormData();
-    formData.append("itemId", itemId);
-    await deleteItem(formData);
+    await deleteItem(itemId); // Server action takes the ID directly
   };
 
   // Start editing
   const startEdit = (item) => {
-    setEditingId(item.documentId);
+    setEditingId(item.id || item.documentId);
     setEditValues({
       name: item.name,
       quantity: item.quantity,
@@ -101,10 +101,9 @@ export default function PantryPage() {
   // Save edit
   const saveEdit = async () => {
     const formData = new FormData();
-    formData.append("itemId", editingId);
     formData.append("name", editValues.name);
     formData.append("quantity", editValues.quantity);
-    await updateItem(formData);
+    await updateItem(editingId, formData);
   };
 
   // Cancel edit
@@ -125,9 +124,9 @@ export default function PantryPage() {
         <div className="mb-4">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <Package className="w-16 h-16 text-orange-600" />
+              <Package className="w-12 h-12 text-orange-600" />
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-stone-900 tracking-tight">
+                <h1 className="text-4xl font-bold text-stone-900 tracking-tight">
                   My Pantry
                 </h1>
                 <p className="text-stone-600 font-light">
@@ -136,7 +135,6 @@ export default function PantryPage() {
               </div>
             </div>
 
-            {/* Add to Pantry Button - Desktop */}
             <Button
               onClick={() => setIsModalOpen(true)}
               className="hidden md:flex bg-orange-600 hover:bg-orange-700 text-white gap-2"
@@ -147,62 +145,31 @@ export default function PantryPage() {
             </Button>
           </div>
 
-          {/* Add to Pantry Button - Mobile (Full Width) */}
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="md:hidden w-full bg-orange-600 hover:bg-orange-700 text-white gap-2 mb-4"
-            size="lg"
-          >
-            <Plus className="w-5 h-5" />
-            Add to Pantry
-          </Button>
-
-          {/* Usage Stats */}
-          {itemsData?.scansLimit !== undefined && (
-            <div className="bg-white py-3 px-4 border-2 border-stone-200 inline-flex items-center gap-3">
-              <Sparkles className="w-5 h-5 text-orange-600" />
-              <div className="text-sm">
-                {itemsData.scansLimit === "unlimited" ? (
-                  <>
-                    <span className="font-bold text-green-600">∞</span>
-                    <span className="text-stone-500">
-                      {" "}
-                      Unlimited AI scans (Pro Plan)
-                    </span>
-                  </>
-                ) : (
-                  <PricingModal>
-                    <span className="text-stone-500 cursor-pointer">
-                      Upgrade to Pro for unlimited Pantry scans
-                    </span>
-                  </PricingModal>
-                )}
-              </div>
+          {/* Pricing Modal & Hydration Fix */}
+          <div className="bg-white py-3 px-4 border-2 border-stone-200 inline-flex items-center gap-3">
+            <Sparkles className="w-5 h-5 text-orange-600" />
+            <div className="text-sm">
+                <PricingModal>
+                  {/* We wrap the trigger text in a span so PricingModal's DialogTrigger asChild works */}
+                  <span className="text-stone-500 cursor-pointer hover:text-orange-600 underline underline-offset-4">
+                    View Plan Limits & Upgrade to Pro
+                  </span>
+                </PricingModal>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Quick Action Card - Find Recipes */}
         {items.length > 0 && (
           <Link href="/pantry/recipes" className="block mb-8">
-            <div className="bg-linear-to-br from-green-600 to-emerald-500 text-white p-6 border-2 border-emerald-700 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group">
+            <div className="bg-emerald-600 text-white p-6 border-2 border-emerald-700 hover:shadow-xl transition-all cursor-pointer group">
               <div className="flex items-center gap-4">
-                <div className="bg-white/20 p-3 border-2 border-white/30 group-hover:bg-white/30 transition-colors">
-                  <ChefHat className="w-8 h-8" />
-                </div>
+                <ChefHat className="w-8 h-8" />
                 <div className="flex-1">
-                  <h3 className="font-bold text-xl mb-1">
-                    What Can I Cook Today?
-                  </h3>
-                  <p className="text-green-100 text-sm font-light">
-                    Get AI-powered recipe suggestions from your {items.length}{" "}
-                    ingredients
+                  <h3 className="font-bold text-xl mb-1">What Can I Cook Today?</h3>
+                  <p className="text-emerald-50 text-sm">
+                    Get AI recipe suggestions from your {items.length} ingredients
                   </p>
-                </div>
-                <div className="hidden sm:block">
-                  <Badge className="bg-white/20 text-white border-2 border-white/30 font-bold uppercase tracking-wide">
-                    {items.length} items
-                  </Badge>
                 </div>
               </div>
             </div>
@@ -219,139 +186,64 @@ export default function PantryPage() {
 
         {/* Pantry Items Grid */}
         {!loadingItems && items.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-stone-900">
-                Your Ingredients
-              </h2>
-              <Badge
-                variant="outline"
-                className="text-stone-600 border-2 border-stone-900 font-bold uppercase tracking-wide"
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+            {items.map((item) => (
+              <div
+                key={item.id || item.documentId}
+                className="bg-white p-5 border-2 border-stone-200 hover:border-orange-600 transition-all"
               >
-                {items.length} {items.length === 1 ? "item" : "items"}
-              </Badge>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {items.map((item) => (
-                <div
-                  key={item.documentId}
-                  className="bg-white p-5 border-2 border-stone-200 hover:border-orange-600 hover:shadow-lg transition-all"
-                >
-                  {editingId === item.documentId ? (
-                    // Edit Mode
-                    <div className="space-y-3">
-                      <input
-                        type="text"
-                        value={editValues.name}
-                        onChange={(e) =>
-                          setEditValues({ ...editValues, name: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border-2 border-stone-200 focus:outline-none focus:border-orange-600 text-sm"
-                        placeholder="Ingredient name"
-                      />
-                      <input
-                        type="text"
-                        value={editValues.quantity}
-                        onChange={(e) =>
-                          setEditValues({
-                            ...editValues,
-                            quantity: e.target.value,
-                          })
-                        }
-                        className="w-full px-3 py-2 border-2 border-stone-200 focus:outline-none focus:border-orange-600 text-sm"
-                        placeholder="Quantity"
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={saveEdit}
-                          disabled={updating}
-                          className="flex-1 bg-green-600 hover:bg-green-700 border-2 border-green-700"
-                        >
-                          {updating ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Check className="w-4 h-4" />
-                          )}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={cancelEdit}
-                          disabled={updating}
-                          className="flex-1 border-2 border-stone-900 hover:bg-stone-900 hover:text-white"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
+                {editingId === (item.id || item.documentId) ? (
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={editValues.name}
+                      onChange={(e) => setEditValues({ ...editValues, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-stone-200"
+                    />
+                    <input
+                      type="text"
+                      value={editValues.quantity}
+                      onChange={(e) => setEditValues({ ...editValues, quantity: e.target.value })}
+                      className="w-full px-3 py-2 border border-stone-200"
+                    />
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={saveEdit} className="bg-green-600">Save</Button>
+                      <Button size="sm" variant="outline" onClick={cancelEdit}>Cancel</Button>
                     </div>
-                  ) : (
-                    // View Mode
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-start">
                     <div>
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <h3 className="font-bold text-lg text-stone-900 mb-1">
-                            {item.name}
-                          </h3>
-                          <p className="text-stone-500 text-sm font-light">
-                            {item.quantity}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => startEdit(item)}
-                            className="p-2 border-2 border-transparent hover:border-orange-600 hover:bg-orange-50 transition-all text-stone-600 hover:text-orange-600"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(item.documentId)}
-                            disabled={deleting}
-                            className="p-2 border-2 border-transparent hover:border-red-600 hover:bg-red-50 transition-all text-stone-600 hover:text-red-600"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="text-xs text-stone-400">
-                        Added {new Date(item.createdAt).toLocaleDateString()}
-                      </div>
+                      <h3 className="font-bold text-stone-900">{item.name}</h3>
+                      <p className="text-stone-500 text-sm">{item.quantity}</p>
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => startEdit(item)} className="text-stone-400 hover:text-orange-600">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleDelete(item.id || item.documentId)} className="text-stone-400 hover:text-red-600">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
         {/* Empty State */}
         {!loadingItems && items.length === 0 && (
-          <div className="bg-white p-12 text-center border-2 border-dashed border-stone-200">
-            <div className="bg-orange-50 w-20 h-20 border-2 border-orange-200 flex items-center justify-center mx-auto mb-6">
-              <Package className="w-10 h-10 text-orange-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-stone-900 mb-2">
-              Your Pantry is Empty
-            </h3>
-            <p className="text-stone-600 mb-8 max-w-md mx-auto font-light">
-              Start by scanning your pantry with AI or adding ingredients
-              manually to discover amazing recipes!
-            </p>
-            <Button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-orange-600 hover:bg-orange-700 text-white gap-2"
-              size="lg"
-            >
-              <Plus className="w-5 h-5" />
+          <div className="bg-white p-12 text-center border-2 border-dashed border-stone-200 mt-8">
+            <h3 className="text-2xl font-bold text-stone-900 mb-2">Your Pantry is Empty</h3>
+            <p className="text-stone-600 mb-8">Start by scanning ingredients or adding them manually.</p>
+            <Button onClick={() => setIsModalOpen(true)} className="bg-orange-600">
               Add Your First Item
             </Button>
           </div>
         )}
       </div>
 
-      {/* Add to Pantry Modal */}
       <AddToPantryModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

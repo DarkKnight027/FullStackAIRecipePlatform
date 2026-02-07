@@ -1,6 +1,6 @@
 import React from 'react';
 import HeaderClient from './HeaderClient';
-import checkUser from '@/lib/checkUser';
+import {checkUser} from '@/lib/checkUser';
 
 const Header = async () => {
   const user = await checkUser();
